@@ -1,10 +1,14 @@
+# SQL Notes
+
+[TOC]
+
 ## Simple queries
 
 Perhaps the simplest form of query in SQL asks for those tuples of some one relation that satisfy a condition. This simple query, like almost all SQL queries, uses the three keywords - SELECT, FROM, and WHERE.  
 
 Let's assume we're working with this data base:  
 
-![](movies_schema.PNG)  
+![](example_schemas/movies_schema.PNG)  
 
 Here's a query that illustrates the usage of the three keywords:  
 
@@ -165,7 +169,7 @@ An atomic value that can appear as one component of a tuple is referred to as a 
 There are a number of SQL operators that we can apply to a relation R and produce a boolean result. However, the relation R must be expressed as a subquery. As a consequence, if we want to apply these operators to a stored table *Foo*, we can use the subquery `(SELECT * FROM Foo)`, the same thing we use for set operations.  
 
  1) `[NOT] IN`
-      
+    
       * `<attribute> [NOT] IN (<subquery>)` - checks whether the component of a tuple corresponding to `<attribute>` matches any value in the **only** column of the result of the subquery  
       
       * `(<a 1>, ..., <a k>) [NOT] IN (<subquery>)` - checks whether the tuple formed from the components corresponding to the mentioned attributes, equals any tuple in the result of the subquery. Note that the subquery must result in a relation with k attributes
