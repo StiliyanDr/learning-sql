@@ -117,121 +117,109 @@ Another useful feature is that we can use arithmetic/string expressions in the a
 
 `... ORDER BY YEAR(CURRENT_DATE) - YEAR(BIRTHDATE)`
 
+```sql
+SELECT title, length
+FROM Movies
+WHERE studioName = 'Disney' AND year = 1990
+ORDER BY title;
+```
 
+## Queries involving more than one realtion
 
+We are **free to** prefix any attribute name in a query by the relation name and a dot: `<R>.<A>`. Whenever two relations are a part of a query and have matching attribute names, we **have to** prefix these attribute names with their corresponding relation name and a dot.  
 
+However, sometimes we need to ask a query that involves two or more tuples from the same relation. We may list a relation R as many times as we need to in the FROM clause, but we need a way to refer to each occurrence of R. SQL allows us to deﬁne, for each occurrence of R in the FROM clause, an alias. Each use of R in the FROM clause is followed by the (optional) keyword AS and the alias.
 
+### Set operations
 
+`(<subquery 1>) OPERATION [ALL] (<subquery 2>)`;  
 
+OPERATION is one of UNION, INTERSECT or EXCEPT. When ALL is used, the operation is on multisets, otherwise
+it is a set operation.  
 
+The relations that result from the subqueries must have the same **list** of attribute names an types. That is, they must have the same attributes, they should be ordered in the same way and have the same types.  If we want to use a stored relation R as an operand to a set operation, we can use the subquery  `(SELECT * FROM R)` to do so.  
 
-II. Queries involving more than one realtion
+### Subqueries
 
-We are free to prefix any attribute name in a query by the relation name and a dot: <R>.<A>
-Whenever two relations are a part of a query and have matching attribute names, we have to
-prefix these attribute names with their corresponding relation name and a dot.
+A query that is part of another is called a subquery. Set operations in SQL are an example where subqueries are used since UNION, INTERSECT and EXCEPT expect subqueires as arguments. Three of the most common uses of subqueries are:
 
-However, sometimes we need to ask a query that involves two or more tuples from the same relation.
-We may list a relation R as many times as we need to in the FROM clause, but we need a way to
-refer to each occurrence of R. SQL allows us to deﬁne, for each occurrence of R in the FROM clause,
-an alias which we shall refer to as a tuple variable. Each use of R in the FROM clause is followed
-by the (optional) keyword AS and the name of the tuple variable.
+ - subqueries that return a scalar value  
+   This value can then be compared with another value or an attribute in a WHERE clause
+   
+ - subqueries that return relations  
+   These relations can then be used in different ways in WHERE clauses:  
+   
+   * check whether that relation has any tuples
+   * check if a tuple made from components in another relation equals any or all tuples in that relation and others
+   
+   If the relation resulting from the subquery has only one attribute, we can think of the relation as a list of scalar values
+   
+ - subqueries that appear in FROM clauses, followed by an alias that represents the tuples in the result of the subquery
 
-(Multi)Set operations:
+### Subqueries that Produce Scalar Values
 
-(<subquery 1>) OPERATION [ALL] (<subquery 2>);
-OPERATION e { UNION, INTERSECT, EXCEPT }, when ALL is used, the operation is on multisets, otherwise
-it is a set operation.
-The relations that result from the subqueries must have the same !list! of attribute names an types.
-If we want to use a stored relation R as an operand to a set operation, we can use the subquery
-(SELECT * FROM R) to do so.
+An atomic value that can appear as one component of a tuple is referred to as a scalar. A subquery that results in a unary relation (having one attribute) may have any number of tuples. We might deduce from some information we have that there will be only a single value produced for the only attribute of the relation. If so, we can use this subquery expression as if it were a constant. In particular, it may appear in a WHERE clause any place we would expect a scalar value, i.e. a constant or an attribute representing a component of a tuple. If the number of tuples produced by the subquery is not 1, then a run-time error occurs.  
 
-III. Subqueries
+### Conditions involving relations
 
-A query that is part of another is called a subquery.
-Set operations in SQL are an example where subqueries are used since UNION, INTERSECT and EXCEPT
-expect subqueires as arguments.
-Three of the most common uses of subqueries are:
- - subqueries that return a scalar value. This value can then be compared with another value or an
-   an attribute in a WHERE clause.
- - subqueries that return relations. These relations can then be used in different ways in WHERE
-   clauses: check whether that relation has any tuples, check if a tuple made from components in
-   another relation equals any or all tuples in that relation and others. If the relation resulting
-   from the subquery has only one attribute, we can think of the relation as a list of scalar values.
- - subqueries that appear in FROM clauses, followed by a tuple variable (a name for the resulting
-   relation) that represents the tuples in the result of the subquery
+There are a number of SQL operators that we can apply to a relation R and produce a boolean result. However, the relation R must be expressed as a subquery. As a consequence, if we want to apply these operators to a stored table *Foo*, we can use the subquery `(SELECT * FROM Foo)`, the same thing we use for set operations.  
 
-Subqueries that Produce Scalar Values:
-An atomic value that can appear as one component of a tuple is referred to as a scalar.
-A subquery that results in a unary relation (having one attribute) may have any number of tuples.
-We might deduce from some information we have that there will be only a single value produced for
-the only attribute of the relation.
-If so, we can use this subquery expression as if it were a constant. In particular, it may appear in
-a WHERE clause any place we would expect a scalar value, i.e. a constant or an attribute representing
-a component of a tuple.
-If the number of tuples produced by the subquery is not 1, then a run-time error occurs.
+ 1) `[NOT] IN`
+      
+      * `<attribute> [NOT] IN (<subquery>)` - checks whether the component of a tuple corresponding to `<attribute>` matches any value in the **only** column of the result of the subquery  
+      
+      * `(<a 1>, ..., <a k>) [NOT] IN (<subquery>)` - checks whether the tuple formed from the components corresponding to the mentioned attributes, equals any tuple in the result of the subquery. Note that the subquery must result in a relation with k attributes
+      
+ 2) `ALL, ANY`
+    
+    * `[NOT] <attribute> < ALL(<subquery>)` - checks whether the component corresponding to `<attribute>` is < than all values in the **only** column of the result of the subquery. < can be replaced by any appropriate comparison operator
+    * `[NOT] (<a1>, ..., <a k>) < ANY(<subquery>)` - checks whether the tuple formed by the components corresponding to the mentioned attributes is < than at least one tuple from the result of the subquery, which must have k attributes. < can again be replaced by another comparison operator
+    
+ 4) `[NOT] EXISTS (<subquery>)` - checks whether the result of the subquery has any tuples
 
-Conditions involving relations:
-There are a number of SQL operators that we can apply to a relation R and produce a boolean result.
-However, the relation R must be expressed as a subquery. As a consequence, if we want to apply these
-operators to a stored table Foo, we can use the subquery (SELECT * FROM Foo), the same thing we use
-for set operations.
- 1) [NOT] IN
-      1.1. <attribute> [NOT] IN (<subquery>) - checks whether the component of a tuple corresponding to
-        <attribute> matches any value in the ONLY column of the result of the subquery
-      1.2. (<a 1>, ..., <a k>) [NOT] IN (<subquery>) - checks whether the tuple, formed from the components
-        corresponding to the mentioned attributes, equals any tuple in the result of the subquery.
-        Note that the subquery must result in a relation with k attributes.
- 2) ALL, ANY
-    [NOT] <attribute> < ALL(<subquery>) - checks whether the component corresponding to <attribute>
-    is < than all values in the only column of the result of the subquery. < can be replaced by any
-    appropriate comparison operator.
-    [NOT] (<a1>, ..., <a k>) < ANY(<subquery>) - checks wheter the tuple formed by the components
-    corresponding to the mentioned attributes is < than at least one tuple from the result of the
-    subquery, which must have k attributes. < can again be replaced by another comaprison operator.
+A tuple in SQL is represented by a parenthesized list of scalar values (constants, attribute names, attribute expressions). For example: `(name, 40564, age, 'Calculous', score - 2)`.  
 
- 4) [NOT] EXISTS (<subquery>) - checks whether the result of the subquery has any tuples
+If a tuple *t* has the same number of components as a relation *R*, then it makes sense to compare *t* to tuples in *R* the way we showed in the above expressions. Note that when comparing a tuple with members of a relation *R*, we compare components using the assumed standard order for the attributes of *R*.  
 
-A tuple in SQL is represented by a parenthesized list of scalar values (constants, attribute names,
-attribute expressions).
-for example: (name, 40564, age, 'Calculous', score - 2)
-If a tuple t has the same number of components as a relation R, then it makes sense to compare t to
-tuples in R the way we showed in the above expressions. Note that when comparing a tuple with members
-of a relation R, we compare components using the assumed standard order for the attributes of R.
+Nested subqueries can often be replaced by joins as we'll see.  
 
-Nested subqueries can often be replaced by joins.
+### Correlated Subqueries
 
-Correlated Subqueries:
+The simplest subqueries can be evaluated once and for all, and the result used in a higher-level query. A more complicated use of nested subqueries requires the subquery to be evaluated many times, once for each assignment of a value to some term in the subquery that comes from a tuple variable outside the subquery. A subquery of this type is called a **correlated subquery**. Put simpler, a subquery that references attributes of relations from outer queries is a correlated subquery. Since it refers to a component for an outer relation attribute, the correlated subquery will be evaluated for each value of the refered attribute.  
 
-The simplest subqueries can be evaluated once and for all, and the result used in a higher-level query.
-A more complicated use of nested subqueries requires the subquery to be evaluated many times, once for
-each assignment of a value to some term in the subquery that comes from a tuple variable outside the
-subquery. A subquery of this type is called a correlated subquery.
-Put simpler, a subquery that references attributes of relations from outer (sub)queries is a correlated
-subquery. Since it refers to a component for an outer relation attribute, the correlated subquery will
-be evaluated for each value of the refered attibute.
-
-example:
-
-SELECT DISTINCT title
+```sql
+# Movies with sequels
+SELECT title
 FROM Movie AS OldMovie
 WHERE year < ANY (SELECT year
                   FROM Movie
                   WHERE title = OldMovie.title);
+```
 
-When writing a correlated query it is important that we be aware of the scoping rules for names. The
-attribute refered to by a name in a subquery is first looked up in the relations from that subquery,
-if not found, the search continues in the outer subquery and so on (just like in C++). If an outer query
-has an attribute with a matching name of an attribute in the current query, we can refer to it by pre-
-fixing the attribute name with the name of the relation it belongs to and a dot, just like we did with
-OldMovie.title
+When writing a correlated query it is important that we be aware of the scoping rules for names. The attribute referred to by a name in a subquery is first looked up in the relations from that subquery, if not found, the search continues in the outer subquery and so on. If an outer query has an attribute with a matching name of an attribute in the current query, we can refer to it by prefixing the attribute name with the name of the relation it belongs to and a dot, just like we did with
+`OldMovie.title`.  
 
-Another use for subqueries is as relations in a FROM clause. In a FROM list, instead of a stored relation,
-we may use a parenthesized subquery. Since we don’t have a name for the result of this subquery, we must
-give it a tuple-variable alias. We then refer to tuples in the result of the subquery as we would to tuples
-in any relation that appears in the FROM list.
+Another use for subqueries is as relations in a FROM clause. In a FROM list, instead of a stored relation, we may use a parenthesized subquery. Since we don’t have a name for the result of this subquery, we **must** give it an alias. We then refer to tuples in the result of the subquery as we would to tuples in any relation that appears in the FROM list.  
 
-SQL Join expressions:
+### Duplicate elimination
+
+SQL uses relations that are bags (multisets) rather than sets, and a tuple can appear more than once in a relation. When an SQL query creates a new relation, the SQL system does not ordinarily eliminate duplicates. To eliminate duplicates (from a query result) we just follow the SELECT keyword with DISTINCT.  
+
+```sql
+# Unique movie names
+SELECT DISTINCT title
+FROM Movie;
+```
+
+It is very expensive to eliminate duplicates from a relation, so duplicate elimination should be used only when really necessary. Note that set operations normally eliminate duplicates (unless `ALL` is specified). That is, bags are converted to sets, and the set version of the operation is applied.  
+
+
+
+
+
+
+
+## Joining relations
 
 The result of joins can stand as a query by itself. Alternatively, all these expressions, since they produce
 relations, may be used as subqueries in a FROM clause. These expressions are principally shorthands for more
@@ -285,20 +273,13 @@ to give aliases to each occurrance of that realtion.
    A LEFT JOIN B ON CONDITION, pads B
    A RIGHT JOIN B ON CONDITION, pads A
 
-Duplicate elimination:
-
-SQL uses relations that are bags (multisets) rather than sets, and a tuple can appear more than once in a
-relation. When an SQL query creates a new relation, the SQL system does not ordinarily eliminate duplicates.
-To eliminate duplicates (from a query result) we just follow the SELECT keyword with DISTINCT:
-SELECT DISTINCT ...
-FROM ...;
-It is very expensive to eliminate duplicates from a relation, so duplicate elimination should be used
-only when really necessary.
-Note that set operations normally eliminate duplicates (unless ALL is specified). That is, bags are
-converted to sets, and the set version of the operation is applied.
 
 
-Grouping and aggregation:
+
+
+
+
+## Grouping and aggregation
 
 SQL provides all the capability of the γ operator through the use of aggregation operators in SELECT
 clauses and a special GROUP BY clause.
