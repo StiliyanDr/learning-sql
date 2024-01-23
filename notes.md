@@ -252,6 +252,8 @@ This is where non-clustered indexes become very useful. Non-clustered indexes ha
 
 ![](pics/non_clustered_index.PNG)  
 
+Note that we **don't have to** explicitly state that an index is to be used by a query. SQL engines are smart enough to use an index when it can be used to improve query performance.  
+
 ### Index cost
 Indexes improve search times but do they have a cost? When data is written to the table, the clustered index is updated first and then all other indexes of that table are updated. Every time a write is made to the database, the indexes are unusable until they have updated.  
 
