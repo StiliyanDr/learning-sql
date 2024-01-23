@@ -8,7 +8,7 @@ Perhaps the simplest form of query in SQL asks for those tuples of some one rela
 
 Let's assume we're working with this data base:  
 
-![](example_schemas/movies_schema.PNG)  
+![](pics/example_schemas/movies_schema.PNG)  
 
 Here's a query that illustrates the usage of the three keywords:  
 
@@ -216,6 +216,45 @@ FROM Movie;
 ```
 
 It is very expensive to eliminate duplicates from a relation, so duplicate elimination should be used only when really necessary. Note that set operations normally eliminate duplicates (unless `ALL` is specified). That is, bags are converted to sets, and the set version of the operation is applied.  
+
+
+## Indexing
+
+Imagine that we want to find a piece of information that is within a large database. Let's say we are searching movies by title.  
+
+```sql
+SELECT * from Movies where title = 'Titanic';
+```
+
+Scanning the entire table is inefficient as this involves going through each record in the table in turn and applying the search condition (`title = 'Titanic'`).  
+
+If the records in the *Movies* table were ordered alphabetically by title, we would know that the Titanic record would be somewhere near the end and would avoid scanning most records. This would make our query much more
+efficient.  
+
+This is the idea behind indexing. We know which attributes we would search by most of the time and that's why we create an index for them. An index is a data structure that includes the values of the selected attributes
+(for the index) and "references" to their corresponding records in the database. The index entries are sorted and can be searched in a much faster way (binary search).  
+
+When searching by using an index, we can do a fast search on the index, applying the search condition on. Those index entries that match our search condition are used by following their references and retrieving the corresponding records from the database.  
+
+### Clustered indexes
+
+A clustered index is the unique index per table that uses the primary key to organize the data that is within the table. The clustered index ensures that the primary key is stored in increasing order, which is also the order the table holds in memory. Clustered indexes are created when the table is created.  
+
+![](pics/clustered_index.PNG)  
+
+When searching the table by "id", the ascending order of the column allows for optimal searches to be performed.  
+
+However, in order to search for the "name" or "city" in the table, we would have to look at every entry because these columns do not have an index.  
+
+### Non-clustered indexes
+
+This is where non-clustered indexes become very useful. Non-clustered indexes have entries for attributes other than the primary key, ones we typically use to search the table. These indexes can be created after a table has been created and filled.  
+
+![](pics/non_clustered_index.PNG)  
+
+### Index cost
+Indexes improve search times but do they have a cost? When data is written to the table, the clustered index is updated first and then all other indexes of that table are updated. Every time a write is made to the database, the indexes are unusable until they have updated.  
+
 
 
 
